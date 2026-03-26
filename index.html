@@ -147,10 +147,15 @@
     btn.disabled = true; btn.textContent = 'Enviando...';
     const date = new Date().toISOString().split('T')[0];
     try {
-      await fetch(WEBHOOK_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, person, title }), mode: 'no-cors',
-      });
+      const formData = new FormData();
+      formData.append('date', date);
+      formData.append('person', person);
+      formData.append('title', title);
+      await fetch(WEBHOOK_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+
+
+
+
       const personName = personEl.options[personEl.selectedIndex].text;
       document.getElementById('successMsg').textContent = `${personName} · ${title}`;
       document.getElementById('formView').style.display = 'none';
