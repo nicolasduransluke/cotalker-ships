@@ -132,7 +132,7 @@
   </div>
 </div>
 <script>
-  const WEBHOOK_URL = 'https://hook.us2.make.com/nyb044fud265u4wittkzqkuw0rh7q1nf';
+  const WEBHOOK_URL = 'https://cotalker-ships-production.up.railway.app/ship';
   async function submitShip() {
     const personEl = document.getElementById('person');
     const person = personEl.value;
@@ -147,11 +147,12 @@
     btn.disabled = true; btn.textContent = 'Enviando...';
     const date = new Date().toISOString().split('T')[0];
     try {
-      const formData = new FormData();
-      formData.append('date', date);
-      formData.append('person', person);
-      formData.append('title', title);
-      await fetch(WEBHOOK_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, person, title }),
+      });
+      if (!response.ok) throw new Error('Server error');
 
 
 
