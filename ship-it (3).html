@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship It · Cotalker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080808; --surface: #111111; --border: #1e1e1e;
+    --accent: #E85A2A; --text: #F0EDE8; --muted: #555;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh; display: flex;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+  body::after {
+    content: ''; position: fixed; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232,90,42,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { width: 100%; max-width: 440px; position: relative; z-index: 1; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .brand { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); font-family: 'Syne', sans-serif; margin-bottom: 10px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 40px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  select, input[type="text"] {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
+    padding: 12px 14px; width: 100%; outline: none; transition: border-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    padding-right: 36px; cursor: pointer;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); background: #151515; }
+  select option { background: #1a1a1a; }
+  .submit-btn {
+    background: var(--accent); border: none; border-radius: 6px; color: #fff;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.05em; padding: 14px 24px; cursor: pointer;
+    transition: all 0.15s; width: 100%; margin-top: 8px;
+  }
+  .submit-btn:hover { background: #ff6635; transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .success { display: none; text-align: center; padding: 40px 0; animation: fadeUp 0.4s ease both; }
+  .success-icon { font-size: 48px; margin-bottom: 16px; }
+  .success h2 { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .success p { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+  .reset-btn {
+    background: transparent; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 10px 20px; cursor: pointer; transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .error-msg { font-size: 11px; color: #e85a5a; display: none; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="formView">
+    <div class="brand">Cotalker</div>
+    <h1>Ship <span>It</span> 🚀</h1>
+    <p class="subtitle">¿Qué construiste hoy? Loguéalo.</p>
+
+    <div class="field">
+      <label>¿Quién eres?</label>
+      <select id="person">
+        <option value="" disabled selected>Selecciona tu nombre</option>
+        <option value="alex">Alex Baader</option>
+        <option value="andrea">Andrea Espinoza</option>
+        <option value="bastian">Bastián González</option>
+        <option value="camila">Camila Carrasco</option>
+        <option value="carlos">Carlos Abarca</option>
+        <option value="daniela">Daniela Flandez</option>
+        <option value="esperanza">Esperanza Forero</option>
+        <option value="esteban">Esteban Tejeda</option>
+        <option value="evelyn">Evelyn Soto</option>
+        <option value="felipe">Felipe Concha</option>
+        <option value="francisco">Francisco Aguilar</option>
+        <option value="jairo">Jairo Cepeda</option>
+        <option value="javiera">Javiera Vera</option>
+        <option value="jocelyn">Jocelyn Tereucán</option>
+        <option value="jonathan">Jonathan González</option>
+        <option value="julio">Julio Durán</option>
+        <option value="leonardo">Leonardo Olivares</option>
+        <option value="martin">Martín Miranda</option>
+        <option value="miguel_e">Miguel Espíldora</option>
+        <option value="miguel_v">Miguel Valenzuela</option>
+        <option value="nicolas_d">Nicolás Durán</option>
+        <option value="nicolas_g">Nicolás Peña</option>
+        <option value="nicolas_r">Nicolás Robledo</option>
+        <option value="nicole">Nicole Estrada</option>
+        <option value="renata">Renata Prado</option>
+        <option value="sergio_c">Sergio Cavieres</option>
+        <option value="sergio_i">Sergio Iturra</option>
+        <option value="valentina">Valentina Lorca</option>
+      </select>
+      <span class="error-msg" id="personError">Selecciona tu nombre</span>
+    </div>
+
+    <div class="field">
+      <label>¿Qué shipeaste?</label>
+      <input type="text" id="title" placeholder="ej. Aramco OT reconciliation v2" maxlength="120">
+      <span class="error-msg" id="titleError">Describe qué shipeaste</span>
+    </div>
+
+    <button class="submit-btn" onclick="submitShip()" id="submitBtn">Ship It 🚀</button>
+  </div>
+
+  <div class="success" id="successView">
+    <div class="success-icon">✅</div>
+    <h2>Shipped.</h2>
+    <p id="successMsg"></p>
+    <button class="reset-btn" onclick="resetForm()">Logear otro ship</button>
+  </div>
+</div>
+<script>
+  const WEBHOOK_URL = 'https://hook.us2.make.com/nyb044fud265u4wittkzqkuw0rh7q1nf';
+  async function submitShip() {
+    const personEl = document.getElementById('person');
+    const person = personEl.value;
+    const title = document.getElementById('title').value.trim();
+    let valid = true;
+    if (!person) { document.getElementById('personError').style.display = 'block'; valid = false; }
+    else { document.getElementById('personError').style.display = 'none'; }
+    if (!title) { document.getElementById('titleError').style.display = 'block'; valid = false; }
+    else { document.getElementById('titleError').style.display = 'none'; }
+    if (!valid) return;
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    const date = new Date().toISOString().split('T')[0];
+    try {
+      const formData = new FormData();
+      formData.append('date', date);
+      formData.append('person', person);
+      formData.append('title', title);
+      await fetch(WEBHOOK_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+
+
+
+
+      const personName = personEl.options[personEl.selectedIndex].text;
+      document.getElementById('successMsg').textContent = `${personName} · ${title}`;
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').style.display = 'block';
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Ship It 🚀';
+      alert('Error al enviar. Intenta de nuevo.');
+    }
+  }
+  function resetForm() {
+    document.getElementById('person').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'Ship It 🚀';
+    document.getElementById('formView').style.display = 'block';
+    document.getElementById('successView').style.display = 'none';
+  }
+</script>
+</body>
+</html>
