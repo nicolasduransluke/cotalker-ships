@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship It · Cotalker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --accent: #E85A2A;
+    --accent-dim: rgba(232, 90, 42, 0.12);
+    --text: #F0EDE8;
+    --muted: #555;
+    --success: #2AE87A;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,90,42,0.06) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .header {
+    margin-bottom: 40px;
+  }
+
+  .brand {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  select, input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 12px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  select:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+    background: #151515;
+  }
+
+  select option {
+    background: #1a1a1a;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .cat-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    outline: none;
+  }
+
+  .cat-btn span {
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cat-btn:hover {
+    border-color: #333;
+    background: #151515;
+  }
+
+  .cat-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--text);
+  }
+
+  .cat-btn.active span {
+    color: var(--accent);
+  }
+
+  .submit-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .submit-btn:hover {
+    background: #ff6635;
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Success state */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 40px 0;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .success-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .success h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .success p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .error-msg {
+    font-size: 11px;
+    color: #e85a5a;
+    display: none;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="brand">Cotalker</div>
+    <h1>Ship <span>It</span> 🚀</h1>
+    <p class="subtitle">¿Qué construiste hoy? Loguéalo.</p>
+  </div>
+
+  <div id="formView">
+    <div class="form">
+
+      <div class="field">
+        <label>¿Quién eres?</label>
+        <select id="person">
+          <option value="" disabled selected>Selecciona tu nombre</option>
+          <option value="leo">Leo · CTO</option>
+          <option value="felipe">Felipe · CPO</option>
+          <option value="julio">Julio · COO</option>
+          <option value="alex">Alex · Sales</option>
+          <option value="javi">Javi · Partners</option>
+          <option value="esteban">Esteban · Tech Ops</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de ship</label>
+        <div class="category-grid">
+          <button type="button" class="cat-btn" data-value="agent" onclick="selectCat(this)">
+            🤖<span>Agent</span>
+          </button>
+          <button type="button" class="cat-btn" data-value="workflow" onclick="selectCat(this)">
+            🔧<span>Workflow</span>
+          </button>
+          <button type="button" class="cat-btn" data-value="blueprint" onclick="selectCat(this)">
+            📦<span>Blueprint</span>
+          </button>
+          <button type="button" class="cat-btn" data-value="client" onclick="selectCat(this)">
+            🚀<span>Client</span>
+          </button>
+          <button type="button" class="cat-btn" data-value="feature" onclick="selectCat(this)">
+            ⚙️<span>Feature</span>
+          </button>
+        </div>
+        <input type="hidden" id="category">
+        <span class="error-msg" id="catError">Selecciona un tipo</span>
+      </div>
+
+      <div class="field">
+        <label>¿Qué shipeaste?</label>
+        <input type="text" id="title" placeholder="ej. Aramco OT reconciliation v2" maxlength="80">
+        <span class="error-msg" id="titleError">Describe qué shipeaste</span>
+      </div>
+
+      <button class="submit-btn" onclick="submitShip()" id="submitBtn">
+        Ship It 🚀
+      </button>
+
+    </div>
+  </div>
+
+  <div class="success" id="successView">
+    <div class="success-icon">✅</div>
+    <h2>Shipped.</h2>
+    <p id="successMsg">Tu ship fue registrado en el dashboard.</p>
+    <button class="reset-btn" onclick="resetForm()">Logear otro ship</button>
+  </div>
+</div>
+
+<script>
+  const WEBHOOK_URL = 'https://hook.us2.make.com/nyb044fud265u4wittkzqkuw0rh7q1nf';
+
+  let selectedCategory = '';
+
+  function selectCat(btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCategory = btn.dataset.value;
+    document.getElementById('category').value = selectedCategory;
+    document.getElementById('catError').style.display = 'none';
+  }
+
+  async function submitShip() {
+    const person = document.getElementById('person').value;
+    const title = document.getElementById('title').value.trim();
+    let valid = true;
+
+    if (!selectedCategory) {
+      document.getElementById('catError').style.display = 'block';
+      valid = false;
+    }
+    if (!title) {
+      document.getElementById('titleError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('titleError').style.display = 'none';
+    }
+    if (!person) {
+      valid = false;
+    }
+    if (!valid) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const today = new Date();
+    const date = today.toISOString().split('T')[0];
+
+    const payload = { date, person, category: selectedCategory, title };
+
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        mode: 'no-cors',
+      });
+
+      document.getElementById('successMsg').textContent = `${title} — registrado.`;
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').style.display = 'block';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Ship It 🚀';
+      alert('Error al enviar. Intenta de nuevo.');
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('person').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('category').value = '';
+    selectedCategory = '';
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'Ship It 🚀';
+    document.getElementById('formView').style.display = 'block';
+    document.getElementById('successView').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
